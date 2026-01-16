@@ -4,7 +4,8 @@
       "Bash(powershell -Command \"Get-ChildItem -Force | Select-Object Name, PSIsContainer\")",
       "Bash(git init:*)",
       "Bash(gh auth:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }
