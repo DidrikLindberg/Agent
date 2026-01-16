@@ -49,19 +49,21 @@ export interface StoredSummary {
 }
 
 export function summaryToStorable(summary: Summary, threadId?: string, messageId?: string): StoredSummary {
-  return {
+  const result: StoredSummary = {
     id: summary.id,
     generatedAt: summary.generatedAt.toISOString(),
     emailMappings: Object.fromEntries(summary.emailMappings),
-    threadId,
-    messageId,
   };
+  if (threadId !== undefined) result.threadId = threadId;
+  if (messageId !== undefined) result.messageId = messageId;
+  return result;
 }
 
 export function loadStoredSummary(stored: StoredSummary): { emailMappings: Map<string, string>; threadId?: string; messageId?: string } {
-  return {
+  const result: { emailMappings: Map<string, string>; threadId?: string; messageId?: string } = {
     emailMappings: new Map(Object.entries(stored.emailMappings)),
-    threadId: stored.threadId,
-    messageId: stored.messageId,
   };
+  if (stored.threadId !== undefined) result.threadId = stored.threadId;
+  if (stored.messageId !== undefined) result.messageId = stored.messageId;
+  return result;
 }

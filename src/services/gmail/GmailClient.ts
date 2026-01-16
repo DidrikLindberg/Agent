@@ -294,13 +294,12 @@ export class GmailClient {
     const attachments = this.extractAttachments(message.payload);
     const labels = message.labelIds || [];
 
-    return {
+    const email: Email = {
       id: message.id || '',
       threadId: message.threadId || '',
       referenceId: generateReferenceId(index),
       from,
       to,
-      cc: cc.length > 0 ? cc : undefined,
       subject: getHeader('Subject'),
       snippet: message.snippet || '',
       body,
@@ -309,6 +308,8 @@ export class GmailClient {
       attachments,
       isUnread: labels.includes('UNREAD'),
     };
+    if (cc.length > 0) email.cc = cc;
+    return email;
   }
 
   private extractBody(payload?: gmail_v1.Schema$MessagePart): { plain: string; html?: string } {
@@ -348,7 +349,9 @@ export class GmailClient {
       }
     }
 
-    return { plain, html };
+    const result: { plain: string; html?: string } = { plain };
+    if (html !== undefined) result.html = html;
+    return result;
   }
 
   private extractAttachments(payload?: gmail_v1.Schema$MessagePart): Attachment[] {

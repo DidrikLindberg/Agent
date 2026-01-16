@@ -120,13 +120,15 @@ Respond with JSON in this exact format:
             type: 'reply' as const,
             content: p.content || '',
           };
-        case 'forward':
-          return {
+        case 'forward': {
+          const fwd: Command = {
             ...base,
             type: 'forward' as const,
             forwardTo: p.forwardTo || '',
-            note: p.note,
           };
+          if (p.note) (fwd as import('../../models/Command.js').ForwardCommand).note = p.note;
+          return fwd;
+        }
         case 'archive':
           return { ...base, type: 'archive' as const };
         case 'delete':

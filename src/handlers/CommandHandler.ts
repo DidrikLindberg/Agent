@@ -56,10 +56,12 @@ export class CommandHandler {
       }
 
       // Resolve email references to Gmail IDs
-      const resolvedCommands = commands.map((cmd) => ({
-        ...cmd,
-        targetGmailId: emailMappings.get(cmd.targetRef),
-      }));
+      const resolvedCommands: Command[] = commands.map((cmd) => {
+        const resolved = { ...cmd };
+        const gmailId = emailMappings.get(cmd.targetRef);
+        if (gmailId) resolved.targetGmailId = gmailId;
+        return resolved;
+      });
 
       // Execute commands
       const results = await this.executeCommands(resolvedCommands);
