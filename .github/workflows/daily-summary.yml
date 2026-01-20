@@ -1,0 +1,55 @@
+name: Daily Email Summary
+
+on:
+  schedule:
+    # Runs at 8:00 AM UTC every day (adjust for your timezone)
+    # For EST (UTC-5): 8am EST = 1pm UTC, use "0 13 * * *"
+    # For PST (UTC-8): 8am PST = 4pm UTC, use "0 16 * * *"
+    - cron: '0 13 * * *'
+
+  # Allow manual trigger from GitHub Actions tab
+  workflow_dispatch:
+
+jobs:
+  run-agent:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create data directory
+        run: mkdir -p data/summaries
+
+      - name: Write Gmail tokens
+        run: echo '${{ secrets.GMAIL_TOKENS }}' > data/tokens.json
+
+      - name: Create .env file
+        run: |
+          echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
+          echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env
+          echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> .env
+          echo "USER_EMAIL=${{ secrets.USER_EMAIL }}" >> .env
+          echo "CLAUDE_MODEL=claude-sonnet-4-20250514" >> .env
+          echo "EMAIL_LOOKBACK_HOURS=24" >> .env
+          echo "MAX_EMAILS_PER_RUN=50" >> .env
+
+      - name: Run email agent
+        run: npm run dev
+
+      - name: Upload summary artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: summary-${{ github.run_number }}
+          path: data/summaries/
+          retention-days: 7
